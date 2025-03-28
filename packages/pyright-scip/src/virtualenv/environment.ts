@@ -8,6 +8,9 @@ import { sync as commandExistsSync } from 'command-exists';
 // Some future improvements:
 //  - Could use `importlib` and execute some stuff from Python
 
+const PIP_SHOW_CHUNK_SIZE = 100;
+const MAX_EXEC_SYNC_BUF_SIZE = 5 * 1024 * 1024;
+
 interface PipInformation {
     name: string;
     version: string;
@@ -29,15 +32,26 @@ let getPipCommand = () => {
 };
 
 function pipList(): PipInformation[] {
-    return JSON.parse(child_process.execSync(`${getPipCommand()} list --format=json`).toString()) as PipInformation[];
+    return JSON.parse(
+        child_process
+            .execSync(`${getPipCommand()} list --format=json`, { maxBuffer: MAX_EXEC_SYNC_BUF_SIZE })
+            .toString()
+    ) as PipInformation[];
 }
 
 function pipBulkShow(names: string[]): string[] {
-    // TODO: This probably breaks with enough names. Should batch them into 512 or whatever the max for bash would be
-    return child_process
-        .execSync(`${getPipCommand()} show -f ${names.join(' ')}`)
-        .toString()
-        .split('\n---');
+    const chunks = [];
+    for (let i = 0; i < names.length; i += PIP_SHOW_CHUNK_SIZE) {
+        const chunk = names.slice(i, i + PIP_SHOW_CHUNK_SIZE);
+        chunks.push(chunk);
+    }
+
+    return chunks.flatMap((chunk) =>
+        child_process
+            .execSync(`${getPipCommand()} show -f ${chunk.join(' ')}`, { maxBuffer: MAX_EXEC_SYNC_BUF_SIZE })
+            .toString()
+            .split('\n---')
+    );
 }
 
 export default function getEnvironment(
