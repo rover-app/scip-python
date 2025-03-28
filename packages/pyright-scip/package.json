@@ -1,6 +1,5 @@
 {
-  "name": "@sourcegraph/scip-python",
-  "version": "0.6.0",
+  "name": "@getrover/scip-python",
   "description": "SCIP indexer for Python",
   "main": "index.js",
   "scripts": {
@@ -13,10 +12,10 @@
     "webpack": "webpack --mode development --progress",
     "watch": "webpack --mode development --progress --watch"
   },
-  "author": "Sourcegraph",
+  "author": "getrover",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sourcegraph/scip-python",
+    "url": "https://github.com/documaticai/scip-python",
     "directory": "packages/pyright-scip/"
   },
   "license": "MIT",
